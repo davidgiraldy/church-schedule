@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Service Schedule</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <img src="assets/logo.png" alt="GBI House of Happiness" class="topbar-logo" />
+      <h1>Weekly Service Schedule</h1>
+      <button id="btn-new-schedule" class="btn btn-primary">+ Add Schedule</button>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="filter-tab active" data-mode="upcoming">Upcoming</button>
+      <button class="filter-tab" data-mode="all">All</button>
+      <button class="filter-tab" data-mode="custom">Custom Range</button>
+    </div>
+    <div id="custom-range" class="custom-range hidden">
+      <input type="date" id="filter-from" />
+      <span class="range-sep">to</span>
+      <input type="date" id="filter-to" />
+      <button id="btn-apply-filter" class="btn btn-small btn-primary">Apply</button>
+      <button id="btn-clear-filter" class="btn btn-small">Clear</button>
+    </div>
+  </div>
+
+  <main id="schedule-list" class="schedule-list">
+    <p class="loading">Loading schedules...</p>
+  </main>
+
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Add Schedule</h2>
+        <button id="btn-close-modal" class="btn-icon">&times;</button>
+      </div>
+      <form id="schedule-form" class="modal-body">
+        <input type="hidden" id="schedule-id" />
+
+        <div class="field-row">
+          <label for="service-date">Date</label>
+          <input type="date" id="service-date" required />
+        </div>
+
+        <div class="field-row">
+          <label for="schedule-label">Note (optional)</label>
+          <input type="text" id="schedule-label" placeholder="e.g. Good Friday, Easter" />
+        </div>
+
+        <div class="field-block">
+          <div class="field-block-header">
+            <label>Service Times</label>
+            <button type="button" id="btn-add-time" class="btn btn-small">+ Time</button>
+          </div>
+          <div id="times-list" class="times-list"></div>
+        </div>
+
+        <div class="field-block">
+          <div class="field-block-header">
+            <label>Assignments</label>
+            <button type="button" id="btn-add-role" class="btn btn-small">+ Role</button>
+          </div>
+          <div id="assignments-list" class="assignments-list"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-delete-schedule" class="btn btn-danger hidden">Delete Schedule</button>
+          <div class="modal-footer-right">
+            <button type="button" id="btn-cancel" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
