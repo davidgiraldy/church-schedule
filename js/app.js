@@ -205,22 +205,34 @@ function renderPeopleView() {
   }
 
   container.innerHTML = `
-    <div class="people-grid">
+    <div class="people-list-card">
       ${people.map((p) => `
-        <article class="group-card person-card">
-          <div class="person-card-header">
-            <h4>${escapeHtml(p.name)}</h4>
-            <span class="badge">${p.entries.length}×</span>
+        <div class="person-row">
+          <button type="button" class="person-row-toggle">
+            <span class="person-row-name">${escapeHtml(p.name)}</span>
+            <span class="person-row-meta">
+              <span class="badge">${p.entries.length}×</span>
+              <span class="expand-caret">&#9662;</span>
+            </span>
+          </button>
+          <div class="person-row-details hidden">
+            <ul>
+              ${p.entries.map((e) => `
+                <li><span class="role">${formatDate(e.date)}</span><span class="person">${escapeHtml(baseRoleLabel(e.role))}</span></li>
+              `).join("")}
+            </ul>
           </div>
-          <ul class="person-history">
-            ${p.entries.map((e) => `
-              <li><span class="role">${formatDate(e.date)}</span><span class="person">${escapeHtml(baseRoleLabel(e.role))}</span></li>
-            `).join("")}
-          </ul>
-        </article>
+        </div>
       `).join("")}
     </div>
   `;
+
+  container.querySelectorAll(".person-row-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("expanded");
+      btn.nextElementSibling.classList.toggle("hidden");
+    });
+  });
 }
 
 function renderScheduleList(schedules) {

@@ -227,7 +227,7 @@ body {
   color: var(--text);
 }
 
-.group-cards, .people-grid {
+.group-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px;
@@ -249,18 +249,57 @@ body {
 .people-search::placeholder { color: var(--text-faint); }
 .people-search:focus { outline: none; border-color: var(--primary); }
 
-.person-card-header {
+.people-list-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.person-row { border-bottom: 1px solid var(--border-soft); }
+.person-row:last-child { border-bottom: none; }
+
+.person-row-toggle {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s;
 }
-.person-card-header h4 { margin: 0; }
+.person-row-toggle:hover { background: var(--card-bg-hover); }
 
-.person-history {
-  max-height: 260px;
-  overflow-y: auto;
+.person-row-name { font-weight: 600; color: var(--text); font-size: 0.92rem; }
+
+.person-row-meta { display: flex; align-items: center; gap: 12px; }
+
+.expand-caret {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  transition: transform 0.15s;
+  display: inline-block;
 }
+.person-row-toggle.expanded .expand-caret { transform: rotate(180deg); }
+
+.person-row-details { padding: 0 20px 16px; max-height: 280px; overflow-y: auto; }
+.person-row-details ul { list-style: none; margin: 0; padding: 0; }
+.person-row-details li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.person-row-details li:last-child { border-bottom: none; }
+.person-row-details li .role { color: var(--text-muted); }
+.person-row-details li .person { font-weight: 600; color: var(--text); }
 
 .group-card {
   background: var(--card-bg);
