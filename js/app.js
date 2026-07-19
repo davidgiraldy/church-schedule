@@ -545,8 +545,10 @@ function buildShareCardHtml(s) {
       <div class="share-date">${dateLabel}</div>
       ${s.label ? `<span class="label-tag">${escapeHtml(s.label)}</span>` : ""}
       <div class="times-row share-times-row">${timesHtml}</div>
-      ${sectionsHtml}
-      ${dressCodeHtml}
+      <div class="share-sections">
+        ${sectionsHtml}
+        ${dressCodeHtml}
+      </div>
       <div class="share-footer">Weekly Service Schedule</div>
     </div>
   `;
