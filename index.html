@@ -20,8 +20,9 @@
 
   <div class="filter-bar">
     <div class="filter-tabs" id="filter-tabs">
-      <button class="filter-tab" data-mode="upcoming">Upcoming</button>
-      <button class="filter-tab active" data-mode="all">All</button>
+      <button class="filter-tab active" data-mode="upcoming">Upcoming</button>
+      <button class="filter-tab" data-mode="all">All</button>
+      <button class="filter-tab" data-mode="month">Month</button>
       <button class="filter-tab" data-mode="custom">Custom Range</button>
     </div>
     <div id="custom-range" class="custom-range hidden">
@@ -30,6 +31,10 @@
       <input type="date" id="filter-to" />
       <button id="btn-apply-filter" class="btn btn-small btn-primary">Apply</button>
       <button id="btn-clear-filter" class="btn btn-small">Clear</button>
+    </div>
+    <div id="month-range" class="custom-range hidden">
+      <select id="filter-month-select"></select>
+      <select id="filter-year-select"></select>
     </div>
   </div>
 

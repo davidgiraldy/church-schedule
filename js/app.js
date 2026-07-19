@@ -2,9 +2,12 @@ let currentScheduleId = null;
 let currentDressCodePath = null;
 let removeDressCodeFlag = false;
 let allSchedules = [];
-let filterMode = "all";
+let filterMode = "upcoming";
 let filterFrom = null;
 let filterTo = null;
+let filterYear = null;
+let filterMonth = null;
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 document.addEventListener("DOMContentLoaded", () => {
   loadSchedules();
@@ -51,31 +54,70 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("filter-to").value = "";
     renderFiltered();
   });
+
+  document.getElementById("filter-month-select").addEventListener("change", (e) => {
+    filterMonth = e.target.value;
+    renderFiltered();
+  });
+  document.getElementById("filter-year-select").addEventListener("change", (e) => {
+    filterYear = e.target.value;
+    renderFiltered();
+  });
 });
 
 function setFilterMode(mode) {
   filterMode = mode;
   document.querySelectorAll(".filter-tab").forEach((t) => t.classList.toggle("active", t.dataset.mode === mode));
   document.getElementById("custom-range").classList.toggle("hidden", mode !== "custom");
+  document.getElementById("month-range").classList.toggle("hidden", mode !== "month");
   renderFiltered();
 }
 
-function todayIso() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+// Upcoming treats the current week's schedule as "done" once it's past noon on the
+// service day, so it rolls over to next week's schedule instead of showing a stale one.
+function upcomingCutoffDate() {
+  const now = new Date();
+  const base = now.getHours() >= 12
+    ? new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}`;
+}
+
+function populateMonthYearOptions() {
+  const now = new Date();
+  const monthSelect = document.getElementById("filter-month-select");
+  const yearSelect = document.getElementById("filter-year-select");
+
+  if (!filterMonth) filterMonth = String(now.getMonth() + 1).padStart(2, "0");
+  if (!filterYear) filterYear = String(now.getFullYear());
+
+  monthSelect.innerHTML = MONTH_NAMES.map((name, i) => {
+    const value = String(i + 1).padStart(2, "0");
+    return `<option value="${value}">${name}</option>`;
+  }).join("");
+  monthSelect.value = filterMonth;
+
+  const years = new Set(allSchedules.map((s) => s.service_date.slice(0, 4)));
+  years.add(String(now.getFullYear()));
+  const sortedYears = [...years].sort();
+  yearSelect.innerHTML = sortedYears.map((y) => `<option value="${y}">${y}</option>`).join("");
+  yearSelect.value = filterYear;
 }
 
 function renderFiltered() {
   let filtered;
   if (filterMode === "upcoming") {
-    const today = todayIso();
-    filtered = allSchedules.filter((s) => s.service_date >= today).sort((a, b) => a.service_date.localeCompare(b.service_date));
+    const cutoff = upcomingCutoffDate();
+    filtered = allSchedules.filter((s) => s.service_date >= cutoff).sort((a, b) => a.service_date.localeCompare(b.service_date));
   } else if (filterMode === "custom") {
     filtered = allSchedules.filter((s) => {
       if (filterFrom && s.service_date < filterFrom) return false;
       if (filterTo && s.service_date > filterTo) return false;
       return true;
     }).sort((a, b) => a.service_date.localeCompare(b.service_date));
+  } else if (filterMode === "month") {
+    const prefix = `${filterYear}-${filterMonth}`;
+    filtered = allSchedules.filter((s) => s.service_date.startsWith(prefix)).sort((a, b) => a.service_date.localeCompare(b.service_date));
   } else {
     filtered = [...allSchedules].sort((a, b) => b.service_date.localeCompare(a.service_date));
   }
@@ -86,6 +128,7 @@ async function loadSchedules() {
   const container = document.getElementById("schedule-list");
   try {
     allSchedules = await window.Api.listSchedules();
+    populateMonthYearOptions();
     renderFiltered();
   } catch (err) {
     container.innerHTML = `<p class="error">Failed to load schedules: ${escapeHtml(err.message)}</p>`;

@@ -123,6 +123,17 @@ body {
   font-family: inherit;
 }
 
+.custom-range select {
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 4px 6px;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .range-sep { font-size: 0.8rem; color: var(--text-faint); }
 
 .btn {
