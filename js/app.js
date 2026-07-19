@@ -164,6 +164,12 @@ function renderScheduleList(schedules) {
     });
   });
 
+  container.querySelectorAll("[data-share-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const schedule = schedules.find((s) => s.id === btn.dataset.shareId);
+      shareSchedule(schedule, btn);
+    });
+  });
 }
 
 function scheduleCardHtml(s) {
@@ -205,6 +211,7 @@ function scheduleCardHtml(s) {
           <div class="times-row">${timesHtml || '<span class="badge muted">Time not set</span>'}</div>
         </div>
         <div class="header-right">
+          <button class="btn btn-small" data-share-id="${s.id}">Share</button>
           <button class="btn btn-small" data-edit-id="${s.id}">Edit</button>
         </div>
       </div>
@@ -443,6 +450,106 @@ async function handleDelete() {
   } catch (err) {
     alert("Failed to delete schedule: " + err.message);
   }
+}
+
+async function shareSchedule(s, triggerBtn) {
+  const originalLabel = triggerBtn.textContent;
+  triggerBtn.disabled = true;
+  triggerBtn.textContent = "Preparing...";
+
+  const root = document.createElement("div");
+  root.className = "share-render-root";
+  root.innerHTML = buildShareCardHtml(s);
+  document.body.appendChild(root);
+
+  try {
+    await waitForImages(root);
+    const canvas = await html2canvas(root.querySelector(".share-card"), { backgroundColor: "#f3ede0", scale: 2, useCORS: true });
+    root.remove();
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    const filename = `schedule-${s.service_date}.png`;
+    const file = new File([blob], filename, { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: "Weekly Service Schedule" });
+      } catch (err) {
+        if (err.name !== "AbortError") downloadBlob(blob, filename);
+      }
+    } else {
+      downloadBlob(blob, filename);
+    }
+  } catch (err) {
+    root.remove();
+    alert("Failed to generate share image: " + err.message);
+  } finally {
+    triggerBtn.disabled = false;
+    triggerBtn.textContent = originalLabel;
+  }
+}
+
+function waitForImages(container) {
+  const imgs = [...container.querySelectorAll("img")];
+  return Promise.all(imgs.map((img) => img.complete ? Promise.resolve() : new Promise((resolve) => {
+    img.addEventListener("load", resolve);
+    img.addEventListener("error", resolve);
+  })));
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Standalone, single-column layout for the shareable PNG — stacked sections read far
+// better than the 3-column desktop grid once compressed into a WhatsApp chat thumbnail.
+function buildShareCardHtml(s) {
+  const dateLabel = formatDate(s.service_date);
+  const times = [...s.schedule_times].sort((a, b) => a.service_time.localeCompare(b.service_time));
+  const timesHtml = times.map((t) => `<span class="badge">${formatTime(t.service_time)}${t.note ? " · " + escapeHtml(t.note) : ""}</span>`).join("");
+
+  const groups = groupAssignmentsCompact(s.schedule_assignments);
+  const sectionsHtml = groups.map((g) => `
+    <div class="share-section">
+      <h4>${escapeHtml(g.group)}</h4>
+      <ul>
+        ${g.items.map((item) => {
+          if (!item.names.length) {
+            return `<li><span class="role">${escapeHtml(item.label)}</span><span class="person unset">-</span></li>`;
+          }
+          const linesHtml = item.names.map((n) => `<span class="person-line">${escapeHtml(n)}</span>`).join("");
+          return `<li><span class="role">${escapeHtml(item.label)}</span><span class="person-list">${linesHtml}</span></li>`;
+        }).join("")}
+      </ul>
+    </div>
+  `).join("");
+
+  const dressCodeHtml = s.dress_code_image_path ? `
+    <div class="share-section">
+      <h4>Dress Code</h4>
+      <img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />
+    </div>
+  ` : "";
+
+  return `
+    <div class="share-card">
+      <div class="share-header">
+        <img class="share-logo" src="assets/logo-icon.svg" alt="" />
+        <div class="share-church-name">GBI House of Happiness</div>
+      </div>
+      <div class="share-date">${dateLabel}</div>
+      ${s.label ? `<span class="label-tag">${escapeHtml(s.label)}</span>` : ""}
+      <div class="times-row share-times-row">${timesHtml}</div>
+      ${sectionsHtml}
+      ${dressCodeHtml}
+      <div class="share-footer">Weekly Service Schedule</div>
+    </div>
+  `;
 }
 
 function formatDate(isoDate) {
