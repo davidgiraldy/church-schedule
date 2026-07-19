@@ -88,7 +88,7 @@ window.Api = {
   },
 
   async syncPeople(names) {
-    const unique = [...new Set(names.map((n) => (n || "").trim()).filter(Boolean))];
+    const unique = [...new Set(names.map((n) => (n || "").trim()).filter((n) => n && n !== "-"))];
     if (!unique.length) return;
     const { error } = await window.sb
       .from("people")

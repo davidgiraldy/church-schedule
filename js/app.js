@@ -180,7 +180,7 @@ function renderPeopleView() {
   for (const s of allSchedules) {
     for (const a of s.schedule_assignments) {
       const name = (a.person_name || "").trim();
-      if (!name) continue;
+      if (!name || name === "-") continue;
       if (!statsMap.has(name)) statsMap.set(name, []);
       statsMap.get(name).push({ date: s.service_date, role: a.role, role_group: a.role_group });
     }
