@@ -374,6 +374,16 @@ body {
   font-family: inherit;
   transition: border-color 0.15s;
 }
+.field-row input.input-error {
+  border-color: var(--danger);
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
 .field-row input:focus, .time-row input:focus, .assignment-row input:focus {
   outline: none;
   border-color: var(--primary);

@@ -10,7 +10,7 @@ window.ROLE_TEMPLATE = [
     "Singer I", "Singer II", "Singer III", "Singer IV",
     "Keyboard", "Bass", "Guitar", "Drum",
     "Dancer I", "Dancer II", "Dancer III", "Dancer IV", "Dancer V", "Dancer VI",
-    "Soundman"
+    "Soundman", "Multimedia"
   ]},
   { group: "Usher", roles: [
     "Lift Bawah", "Lift Atas",

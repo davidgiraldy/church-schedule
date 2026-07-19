@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("modal-overlay").addEventListener("click", (e) => {
     if (e.target.id === "modal-overlay") closeModal();
   });
+  document.getElementById("service-date").addEventListener("input", checkDuplicateDate);
   document.getElementById("btn-add-time").addEventListener("click", () => addTimeRow());
   document.getElementById("btn-add-role").addEventListener("click", () => {
     editingAssignments.push({ role_group: "", role: "", person_name: "" });
@@ -256,6 +257,8 @@ function openModal(schedule = null) {
   document.getElementById("modal-title").textContent = schedule ? "Edit Schedule" : "Add Schedule";
   document.getElementById("schedule-id").value = schedule ? schedule.id : "";
   document.getElementById("service-date").value = schedule ? schedule.service_date : "";
+  document.getElementById("service-date").classList.remove("input-error");
+  document.getElementById("date-error").classList.add("hidden");
   document.getElementById("schedule-label").value = schedule ? (schedule.label || "") : "";
   document.getElementById("btn-delete-schedule").classList.toggle("hidden", !schedule);
 
@@ -376,10 +379,24 @@ function renderAssignmentsEditMode() {
   });
 }
 
+function checkDuplicateDate() {
+  const dateInput = document.getElementById("service-date");
+  const errorEl = document.getElementById("date-error");
+  const isDuplicate = allSchedules.some((s) => s.service_date === dateInput.value && s.id !== currentScheduleId);
+  errorEl.classList.toggle("hidden", !isDuplicate);
+  dateInput.classList.toggle("input-error", isDuplicate);
+  return isDuplicate;
+}
+
 async function handleSubmit(e) {
   e.preventDefault();
   const service_date = document.getElementById("service-date").value;
   const label = document.getElementById("schedule-label").value.trim();
+
+  if (checkDuplicateDate()) {
+    document.getElementById("service-date").focus();
+    return;
+  }
 
   const times = [...document.querySelectorAll("#times-list .time-row")].map((row) => ({
     service_time: row.querySelector(".time-input").value,
