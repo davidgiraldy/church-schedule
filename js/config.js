@@ -21,5 +21,8 @@ window.ROLE_TEMPLATE = [
   { group: "Collect", roles: [
     "Head Kolekte (I&II)", "Kolekte (I&II)", "Kolekte (I&II)", "Kolekte (II)",
     "Pendamping HT", "Pengumuman"
+  ]},
+  { group: "Pendoa", roles: [
+    "PIR", "Doa Syafaat I", "Doa Syafaat II", "Musik Pendoa"
   ]}
 ];
