@@ -6,6 +6,7 @@ let assignmentsEditMode = false;
 let allSchedules = [];
 let knownPeople = [];
 let currentView = "schedule";
+let peopleSearch = "";
 let filterMode = "upcoming";
 let filterFrom = null;
 let filterTo = null;
@@ -78,6 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btn-view-people").addEventListener("click", () => {
     switchView(currentView === "people" ? "schedule" : "people");
+  });
+  document.getElementById("people-search").addEventListener("input", (e) => {
+    peopleSearch = e.target.value.trim().toLowerCase();
+    renderPeopleView();
   });
 });
 
@@ -191,10 +196,11 @@ function renderPeopleView() {
       name,
       entries: entries.sort((a, b) => b.date.localeCompare(a.date)),
     }))
+    .filter((p) => !peopleSearch || p.name.toLowerCase().includes(peopleSearch))
     .sort((a, b) => b.entries.length - a.entries.length || a.name.localeCompare(b.name));
 
   if (!people.length) {
-    container.innerHTML = '<p class="empty">No one has been assigned to a schedule yet.</p>';
+    container.innerHTML = `<p class="empty">${statsMap.size ? "No names match your search." : "No one has been assigned to a schedule yet."}</p>`;
     return;
   }
 

@@ -233,6 +233,22 @@ body {
   gap: 14px;
 }
 
+.people-search {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: var(--text);
+  font-family: inherit;
+}
+.people-search::placeholder { color: var(--text-faint); }
+.people-search:focus { outline: none; border-color: var(--primary); }
+
 .person-card-header {
   display: flex;
   justify-content: space-between;
