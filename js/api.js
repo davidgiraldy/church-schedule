@@ -18,7 +18,7 @@ window.Api = {
     return data;
   },
 
-  async createSchedule({ service_date, label, times, assignments }) {
+  async createSchedule({ service_date, label, times, assignments, dressCodeFile }) {
     const { data: schedule, error: scheduleErr } = await window.sb
       .from("schedules")
       .insert({ service_date, label: label || null })
@@ -28,10 +28,16 @@ window.Api = {
 
     await this._replaceTimes(schedule.id, times);
     await this._replaceAssignments(schedule.id, assignments);
+
+    if (dressCodeFile) {
+      const path = await this.uploadDressCodeImage(schedule.id, dressCodeFile);
+      await window.sb.from("schedules").update({ dress_code_image_path: path }).eq("id", schedule.id);
+      schedule.dress_code_image_path = path;
+    }
     return schedule;
   },
 
-  async updateSchedule(id, { service_date, label, times, assignments }) {
+  async updateSchedule(id, { service_date, label, times, assignments, dressCodeFile, removeDressCode, existingDressCodePath }) {
     const { error: scheduleErr } = await window.sb
       .from("schedules")
       .update({ service_date, label: label || null, updated_at: new Date().toISOString() })
@@ -40,11 +46,39 @@ window.Api = {
 
     await this._replaceTimes(id, times);
     await this._replaceAssignments(id, assignments);
+
+    if (dressCodeFile) {
+      if (existingDressCodePath) await this.deleteDressCodeImage(existingDressCodePath);
+      const path = await this.uploadDressCodeImage(id, dressCodeFile);
+      await window.sb.from("schedules").update({ dress_code_image_path: path }).eq("id", id);
+    } else if (removeDressCode && existingDressCodePath) {
+      await this.deleteDressCodeImage(existingDressCodePath);
+      await window.sb.from("schedules").update({ dress_code_image_path: null }).eq("id", id);
+    }
   },
 
   async deleteSchedule(id) {
     const { error } = await window.sb.from("schedules").delete().eq("id", id);
     if (error) throw error;
+  },
+
+  async uploadDressCodeImage(scheduleId, file) {
+    const ext = file.name.split(".").pop();
+    const path = `${scheduleId}-${Date.now()}.${ext}`;
+    const { error } = await window.sb.storage.from("dress-code").upload(path, file, { upsert: true });
+    if (error) throw error;
+    return path;
+  },
+
+  async deleteDressCodeImage(path) {
+    if (!path) return;
+    await window.sb.storage.from("dress-code").remove([path]);
+  },
+
+  getDressCodeUrl(path) {
+    if (!path) return null;
+    const { data } = window.sb.storage.from("dress-code").getPublicUrl(path);
+    return data.publicUrl;
   },
 
   async _replaceTimes(scheduleId, times) {

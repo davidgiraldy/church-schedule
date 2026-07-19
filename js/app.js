@@ -1,4 +1,6 @@
 let currentScheduleId = null;
+let currentDressCodePath = null;
+let removeDressCodeFlag = false;
 let allSchedules = [];
 let filterMode = "upcoming";
 let filterFrom = null;
@@ -17,6 +19,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-add-role").addEventListener("click", () => addAssignmentRow("Other", ""));
   document.getElementById("schedule-form").addEventListener("submit", handleSubmit);
   document.getElementById("btn-delete-schedule").addEventListener("click", handleDelete);
+
+  document.getElementById("dress-code-file").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    removeDressCodeFlag = false;
+    const preview = document.getElementById("dress-code-preview");
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove("hidden");
+    document.getElementById("btn-remove-dresscode").classList.remove("hidden");
+  });
+  document.getElementById("btn-remove-dresscode").addEventListener("click", () => {
+    removeDressCodeFlag = true;
+    document.getElementById("dress-code-file").value = "";
+    document.getElementById("dress-code-preview").classList.add("hidden");
+    document.getElementById("btn-remove-dresscode").classList.add("hidden");
+  });
 
   document.querySelectorAll(".filter-tab").forEach((tab) => {
     tab.addEventListener("click", () => setFilterMode(tab.dataset.mode));
@@ -118,6 +136,15 @@ function scheduleCardHtml(s) {
     </article>
   `).join("");
 
+  const dressCodeHtml = s.dress_code_image_path ? `
+    <article class="group-card dresscode-card">
+      <h4>Dress Code</h4>
+      <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
+        <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
+      </a>
+    </article>
+  ` : "";
+
   return `
     <section class="schedule-block">
       <div class="schedule-header-card">
@@ -132,6 +159,7 @@ function scheduleCardHtml(s) {
       </div>
       <div class="group-cards">
         ${groupCardsHtml || '<p class="empty-small">No assignments yet.</p>'}
+        ${dressCodeHtml}
       </div>
     </section>
   `;
@@ -174,11 +202,25 @@ function groupAssignmentsFull(assignments) {
 
 function openModal(schedule = null) {
   currentScheduleId = schedule ? schedule.id : null;
+  currentDressCodePath = schedule ? (schedule.dress_code_image_path || null) : null;
+  removeDressCodeFlag = false;
   document.getElementById("modal-title").textContent = schedule ? "Edit Schedule" : "Add Schedule";
   document.getElementById("schedule-id").value = schedule ? schedule.id : "";
   document.getElementById("service-date").value = schedule ? schedule.service_date : "";
   document.getElementById("schedule-label").value = schedule ? (schedule.label || "") : "";
   document.getElementById("btn-delete-schedule").classList.toggle("hidden", !schedule);
+
+  document.getElementById("dress-code-file").value = "";
+  const preview = document.getElementById("dress-code-preview");
+  const removeBtn = document.getElementById("btn-remove-dresscode");
+  if (currentDressCodePath) {
+    preview.src = window.Api.getDressCodeUrl(currentDressCodePath);
+    preview.classList.remove("hidden");
+    removeBtn.classList.remove("hidden");
+  } else {
+    preview.classList.add("hidden");
+    removeBtn.classList.add("hidden");
+  }
 
   document.getElementById("times-list").innerHTML = "";
   if (schedule && schedule.schedule_times.length) {
@@ -252,13 +294,18 @@ async function handleSubmit(e) {
     person_name: row.querySelector(".assign-person-input").value.trim(),
   })).filter((a) => a.role);
 
+  const dressCodeFile = document.getElementById("dress-code-file").files[0] || null;
+
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   try {
     if (currentScheduleId) {
-      await window.Api.updateSchedule(currentScheduleId, { service_date, label, times, assignments });
+      await window.Api.updateSchedule(currentScheduleId, {
+        service_date, label, times, assignments,
+        dressCodeFile, removeDressCode: removeDressCodeFlag, existingDressCodePath: currentDressCodePath,
+      });
     } else {
-      await window.Api.createSchedule({ service_date, label, times, assignments });
+      await window.Api.createSchedule({ service_date, label, times, assignments, dressCodeFile });
     }
     closeModal();
     await loadSchedules();

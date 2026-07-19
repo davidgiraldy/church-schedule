@@ -48,3 +48,11 @@ create policy "public read assignments" on schedule_assignments for select using
 create policy "public write assignments" on schedule_assignments for insert with check (true);
 create policy "public update assignments" on schedule_assignments for update using (true);
 create policy "public delete assignments" on schedule_assignments for delete using (true);
+
+-- dress code image per schedule, stored in the "dress-code" Storage bucket (create it via Dashboard first)
+alter table schedules add column dress_code_image_path text;
+
+create policy "public read dress code images" on storage.objects for select using (bucket_id = 'dress-code');
+create policy "public upload dress code images" on storage.objects for insert with check (bucket_id = 'dress-code');
+create policy "public update dress code images" on storage.objects for update using (bucket_id = 'dress-code');
+create policy "public delete dress code images" on storage.objects for delete using (bucket_id = 'dress-code');
