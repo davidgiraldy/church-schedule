@@ -420,6 +420,23 @@ body {
 @media (max-width: 600px) {
   .assignment-row { grid-template-columns: 1fr; }
   .time-row { grid-template-columns: 1fr; }
-  .topbar { padding: 16px 18px; flex-wrap: wrap; gap: 10px; }
+  .topbar { padding: 14px 18px; }
+  .topbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+  }
+  .topbar-logo { height: 30px; }
+  .topbar h1 {
+    font-size: 1rem;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+  }
+  #btn-new-schedule { flex: 1 1 100%; }
   .filter-bar { padding: 16px 12px 0; }
+  .fill-count { white-space: nowrap; }
+  .schedule-header-card { flex-wrap: wrap; gap: 10px; }
 }
