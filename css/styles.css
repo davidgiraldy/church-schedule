@@ -1,20 +1,23 @@
 :root {
-  --bg: #0a0a0a;
-  --card-bg: #181818;
-  --card-bg-hover: #232323;
-  --border: #2a2a2a;
-  --border-soft: #2a2a2a;
-  --text: #ffffff;
-  --text-muted: #b3b3b3;
-  --text-faint: #6a6a6a;
-  --primary: #1db954;
-  --primary-hover: #1ed760;
-  --primary-tint: rgba(29, 185, 84, 0.16);
-  --danger: #f15e6c;
-  --danger-hover: #e34554;
+  --bg: #f3ede0;
+  --card-bg: #fbf8f0;
+  --card-bg-hover: #f1e9d6;
+  --border: #ddd0ab;
+  --border-soft: #e8ddc2;
+  --text: #3a2c18;
+  --text-muted: #8a7857;
+  --text-faint: #b8a97e;
+  --on-primary: #3a2c18;
+  --primary: #b3872f;
+  --primary-hover: #9c7527;
+  --primary-tint: rgba(179, 135, 47, 0.14);
+  --danger: #a23b2e;
+  --danger-hover: #872f24;
+  --blue: #4a6a7a;
+  --blue-tint: rgba(74, 106, 122, 0.14);
   --radius: 12px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(58, 44, 24, 0.08);
+  --shadow-md: 0 8px 24px rgba(58, 44, 24, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -28,7 +31,7 @@ body {
 }
 
 .topbar {
-  background: linear-gradient(180deg, #181818 0%, #0a0a0a 100%);
+  background: linear-gradient(180deg, var(--card-bg) 0%, var(--bg) 100%);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -96,7 +99,8 @@ body {
 
 .filter-tab.active {
   background: var(--primary);
-  color: #000000;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .custom-range {
@@ -115,7 +119,7 @@ body {
   color: var(--text);
   padding: 4px;
   background: none;
-  color-scheme: dark;
+  color-scheme: light;
   font-family: inherit;
 }
 
@@ -134,12 +138,12 @@ body {
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
 
-.btn:hover { background: var(--card-bg-hover); border-color: #3a3a3a; }
+.btn:hover { background: var(--card-bg-hover); border-color: var(--text-faint); }
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
   background: var(--primary);
-  color: #000000;
+  color: #ffffff;
   border-color: var(--primary);
 }
 
@@ -151,7 +155,7 @@ body {
   border-color: var(--danger);
 }
 
-.btn-danger:hover { background: var(--danger); color: #000; border-color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 .btn-small { padding: 7px 15px; font-size: 0.8rem; border-radius: 999px; }
 
@@ -229,20 +233,15 @@ body {
   gap: 12px;
 }
 
-.fill-count {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-
 .label-tag {
+  display: inline-block;
+  margin-bottom: 10px;
   font-size: 0.72rem;
-  background: var(--primary-tint);
-  color: var(--primary);
+  background: var(--blue-tint);
+  color: var(--blue);
   padding: 3px 10px;
   border-radius: 999px;
   font-weight: 700;
-  vertical-align: middle;
 }
 
 .times-row { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -255,7 +254,7 @@ body {
   font-size: 0.78rem;
   font-weight: 700;
 }
-.badge.muted { color: var(--text-faint); background: #232323; }
+.badge.muted { color: var(--text-faint); background: var(--border-soft); }
 
 .group-card h4 {
   margin: 0 0 10px;
@@ -309,7 +308,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(40, 30, 15, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-start;
@@ -322,14 +321,14 @@ body {
 .modal-overlay.hidden { display: none; }
 
 .modal {
-  background: #181818;
+  background: var(--card-bg);
   border-radius: 18px;
   width: 100%;
   max-width: 640px;
   max-height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(40, 30, 15, 0.3);
   border: 1px solid var(--border);
 }
 
@@ -358,9 +357,9 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.9rem;
-  background: #0a0a0a;
+  background: #ffffff;
   color: var(--text);
-  color-scheme: dark;
+  color-scheme: light;
   font-family: inherit;
   transition: border-color 0.15s;
 }
@@ -381,7 +380,7 @@ body {
   border-radius: 8px;
   border: 1px solid var(--border);
   object-fit: contain;
-  background: #0a0a0a;
+  background: var(--bg);
 }
 
 .dresscode-controls {
@@ -423,9 +422,9 @@ body {
   border-radius: 8px;
   font-size: 0.85rem;
   width: 100%;
-  background: #0a0a0a;
+  background: #ffffff;
   color: var(--text);
-  color-scheme: dark;
+  color-scheme: light;
   font-family: inherit;
 }
 
@@ -465,6 +464,5 @@ body {
   }
   #btn-new-schedule { flex: 1 1 100%; }
   .filter-bar { padding: 16px 12px 0; }
-  .fill-count { white-space: nowrap; }
   .schedule-header-card { flex-wrap: wrap; gap: 10px; }
 }

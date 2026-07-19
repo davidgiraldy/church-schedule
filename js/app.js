@@ -118,8 +118,6 @@ function scheduleCardHtml(s) {
   const times = [...s.schedule_times].sort((a, b) => a.service_time.localeCompare(b.service_time));
   const timesHtml = times.map((t) => `<span class="badge">${formatTime(t.service_time)}${t.note ? " · " + escapeHtml(t.note) : ""}</span>`).join("");
 
-  const totalCount = s.schedule_assignments.length;
-  const filledCount = s.schedule_assignments.filter((a) => a.person_name).length;
   const groups = groupAssignmentsCompact(s.schedule_assignments);
   const groupCardsHtml = groups.map((g) => `
     <article class="group-card">
@@ -149,11 +147,11 @@ function scheduleCardHtml(s) {
     <section class="schedule-block">
       <div class="schedule-header-card">
         <div>
-          <h3>${dateLabel}${s.label ? ` <span class="label-tag">${escapeHtml(s.label)}</span>` : ""}</h3>
+          <h3>${dateLabel}</h3>
+          ${s.label ? `<span class="label-tag">${escapeHtml(s.label)}</span>` : ""}
           <div class="times-row">${timesHtml || '<span class="badge muted">Time not set</span>'}</div>
         </div>
         <div class="header-right">
-          <span class="fill-count">${filledCount}/${totalCount} filled</span>
           <button class="btn btn-small" data-edit-id="${s.id}">Edit</button>
         </div>
       </div>
