@@ -2,7 +2,7 @@ let currentScheduleId = null;
 let currentDressCodePath = null;
 let removeDressCodeFlag = false;
 let allSchedules = [];
-let filterMode = "upcoming";
+let filterMode = "all";
 let filterFrom = null;
 let filterTo = null;
 
