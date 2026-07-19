@@ -382,8 +382,43 @@ body {
 .field-block { display: flex; flex-direction: column; gap: 10px; }
 .field-block-header { display: flex; justify-content: space-between; align-items: center; }
 .field-block-header label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.field-block-actions { display: flex; gap: 8px; }
 
 .times-list, .assignments-list { display: flex; flex-direction: column; gap: 8px; }
+
+.quickfill-group + .quickfill-group { margin-top: 16px; }
+
+.quickfill-group h5 {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.quickfill-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.quickfill-row:last-child { border-bottom: none; }
+
+.quickfill-role { font-size: 0.86rem; color: var(--text-muted); }
+
+.quickfill-name-input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: var(--text);
+  font-family: inherit;
+}
+.quickfill-name-input:focus { outline: none; border-color: var(--primary); }
 
 .dresscode-preview {
   max-width: 100%;

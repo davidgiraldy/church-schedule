@@ -1,6 +1,8 @@
 let currentScheduleId = null;
 let currentDressCodePath = null;
 let removeDressCodeFlag = false;
+let editingAssignments = [];
+let assignmentsEditMode = false;
 let allSchedules = [];
 let filterMode = "upcoming";
 let filterFrom = null;
@@ -19,7 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.id === "modal-overlay") closeModal();
   });
   document.getElementById("btn-add-time").addEventListener("click", () => addTimeRow());
-  document.getElementById("btn-add-role").addEventListener("click", () => addAssignmentRow("Other", ""));
+  document.getElementById("btn-add-role").addEventListener("click", () => {
+    editingAssignments.push({ role_group: "", role: "", person_name: "" });
+    renderAssignmentsEditor();
+  });
+  document.getElementById("btn-toggle-role-edit").addEventListener("click", () => {
+    assignmentsEditMode = !assignmentsEditMode;
+    renderAssignmentsEditor();
+  });
   document.getElementById("schedule-form").addEventListener("submit", handleSubmit);
   document.getElementById("btn-delete-schedule").addEventListener("click", handleDelete);
 
@@ -230,14 +239,13 @@ function groupAssignmentsCompact(assignments) {
   }));
 }
 
-// Full per-slot listing (Singer I, Singer II, ... kept separate) used to populate the edit form.
-function groupAssignmentsFull(assignments) {
-  const sorted = [...assignments].sort((a, b) => a.role_order - b.role_order);
+// Groups a flat assignments array by role_group, preserving first-seen order.
+function groupByRoleGroup(assignments) {
   const map = new Map();
-  for (const a of sorted) {
+  assignments.forEach((a, index) => {
     if (!map.has(a.role_group)) map.set(a.role_group, []);
-    map.get(a.role_group).push(a);
-  }
+    map.get(a.role_group).push({ ...a, index });
+  });
   return [...map.entries()].map(([group, items]) => ({ group, items }));
 }
 
@@ -273,16 +281,18 @@ function openModal(schedule = null) {
     addTimeRow("10:00");
   }
 
-  document.getElementById("assignments-list").innerHTML = "";
+  assignmentsEditMode = false;
   if (schedule && schedule.schedule_assignments.length) {
-    groupAssignmentsFull(schedule.schedule_assignments).forEach((g) => {
-      g.items.forEach((a) => addAssignmentRow(g.group, a.role, a.person_name));
-    });
+    editingAssignments = [...schedule.schedule_assignments]
+      .sort((a, b) => a.role_order - b.role_order)
+      .map((a) => ({ role_group: a.role_group, role: a.role, person_name: a.person_name || "" }));
   } else {
+    editingAssignments = [];
     window.ROLE_TEMPLATE.forEach((g) => {
-      g.roles.forEach((role) => addAssignmentRow(g.group, role, ""));
+      g.roles.forEach((role) => editingAssignments.push({ role_group: g.group, role, person_name: "" }));
     });
   }
+  renderAssignmentsEditor();
 
   document.getElementById("modal-overlay").classList.remove("hidden");
 }
@@ -305,18 +315,65 @@ function addTimeRow(value = "", note = "") {
   list.appendChild(row);
 }
 
-function addAssignmentRow(group = "", role = "", personName = "") {
+function renderAssignmentsEditor() {
+  document.getElementById("btn-add-role").classList.toggle("hidden", !assignmentsEditMode);
+  document.getElementById("btn-toggle-role-edit").textContent = assignmentsEditMode ? "Done Editing Roles" : "Edit Roles";
+  if (assignmentsEditMode) renderAssignmentsEditMode();
+  else renderAssignmentsQuickFill();
+}
+
+// Default view: just role labels + a name input, grouped by section — this is the form
+// used every week to fill in who's serving, so role/group structure stays out of the way.
+function renderAssignmentsQuickFill() {
   const list = document.getElementById("assignments-list");
-  const row = document.createElement("div");
-  row.className = "assignment-row";
-  row.innerHTML = `
-    <input type="text" class="assign-group-input" placeholder="Group (e.g. Mimbar)" value="${escapeHtml(group)}" />
-    <input type="text" class="assign-role-input" placeholder="Role (e.g. Worship Leader)" value="${escapeHtml(role)}" required />
-    <input type="text" class="assign-person-input" placeholder="Assigned name" value="${escapeHtml(personName)}" />
-    <button type="button" class="btn-icon btn-remove-row">&times;</button>
-  `;
-  row.querySelector(".btn-remove-row").addEventListener("click", () => row.remove());
-  list.appendChild(row);
+  const groups = groupByRoleGroup(editingAssignments);
+  list.innerHTML = groups.map((g) => `
+    <div class="quickfill-group">
+      <h5>${escapeHtml(g.group) || "Other"}</h5>
+      ${g.items.map((a) => `
+        <div class="quickfill-row">
+          <span class="quickfill-role">${escapeHtml(a.role)}</span>
+          <input type="text" class="quickfill-name-input" data-index="${a.index}" placeholder="Not assigned" value="${escapeHtml(a.person_name)}" />
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".quickfill-name-input").forEach((input) => {
+    input.addEventListener("input", (e) => {
+      editingAssignments[Number(e.target.dataset.index)].person_name = e.target.value;
+    });
+  });
+}
+
+// Structure view: full Group/Role/Name rows, for creating, renaming, reordering, or removing roles.
+function renderAssignmentsEditMode() {
+  const list = document.getElementById("assignments-list");
+  list.innerHTML = editingAssignments.map((a, index) => `
+    <div class="assignment-row" data-index="${index}">
+      <input type="text" class="assign-group-input" placeholder="Group (e.g. Stage)" value="${escapeHtml(a.role_group)}" />
+      <input type="text" class="assign-role-input" placeholder="Role (e.g. Worship Leader)" value="${escapeHtml(a.role)}" required />
+      <input type="text" class="assign-person-input" placeholder="Assigned name" value="${escapeHtml(a.person_name)}" />
+      <button type="button" class="btn-icon btn-remove-row">&times;</button>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".assignment-row").forEach((row) => {
+    const index = Number(row.dataset.index);
+    row.querySelector(".assign-group-input").addEventListener("input", (e) => {
+      editingAssignments[index].role_group = e.target.value;
+    });
+    row.querySelector(".assign-role-input").addEventListener("input", (e) => {
+      editingAssignments[index].role = e.target.value;
+    });
+    row.querySelector(".assign-person-input").addEventListener("input", (e) => {
+      editingAssignments[index].person_name = e.target.value;
+    });
+    row.querySelector(".btn-remove-row").addEventListener("click", () => {
+      editingAssignments.splice(index, 1);
+      renderAssignmentsEditMode();
+    });
+  });
 }
 
 async function handleSubmit(e) {
@@ -329,11 +386,13 @@ async function handleSubmit(e) {
     note: row.querySelector(".time-note-input").value.trim(),
   }));
 
-  const assignments = [...document.querySelectorAll("#assignments-list .assignment-row")].map((row) => ({
-    role_group: row.querySelector(".assign-group-input").value.trim() || "Other",
-    role: row.querySelector(".assign-role-input").value.trim(),
-    person_name: row.querySelector(".assign-person-input").value.trim(),
-  })).filter((a) => a.role);
+  const assignments = editingAssignments
+    .map((a) => ({
+      role_group: a.role_group.trim() || "Other",
+      role: a.role.trim(),
+      person_name: a.person_name.trim(),
+    }))
+    .filter((a) => a.role);
 
   const dressCodeFile = document.getElementById("dress-code-file").files[0] || null;
 
