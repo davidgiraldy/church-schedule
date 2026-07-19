@@ -14,7 +14,10 @@
     <div class="topbar-inner">
       <img src="assets/logo-icon.svg" alt="GBI House of Happiness" class="topbar-logo" />
       <h1>PPW - Weekly Service Schedule</h1>
-      <button id="btn-new-schedule" class="btn btn-primary">+ Add Schedule</button>
+      <div class="topbar-actions">
+        <button id="btn-view-people" class="btn btn-small">People</button>
+        <button id="btn-new-schedule" class="btn btn-primary">+ Add Schedule</button>
+      </div>
     </div>
   </header>
 
@@ -41,6 +44,12 @@
   <main id="schedule-list" class="schedule-list">
     <p class="loading">Loading schedules...</p>
   </main>
+
+  <main id="people-view" class="schedule-list hidden">
+    <div id="people-list"></div>
+  </main>
+
+  <datalist id="people-datalist"></datalist>
 
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="modal">

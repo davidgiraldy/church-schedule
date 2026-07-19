@@ -56,3 +56,19 @@ create policy "public read dress code images" on storage.objects for select usin
 create policy "public upload dress code images" on storage.objects for insert with check (bucket_id = 'dress-code');
 create policy "public update dress code images" on storage.objects for update using (bucket_id = 'dress-code');
 create policy "public delete dress code images" on storage.objects for delete using (bucket_id = 'dress-code');
+
+-- people: known names, used to power autocomplete when filling in assignments.
+-- Not a foreign key of schedule_assignments on purpose — keeps this additive, no migration
+-- of existing person_name text data required. Rows are auto-added whenever a new name is saved.
+create table people (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table people enable row level security;
+
+create policy "public read people" on people for select using (true);
+create policy "public write people" on people for insert with check (true);
+create policy "public update people" on people for update using (true);
+create policy "public delete people" on people for delete using (true);

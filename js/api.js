@@ -81,6 +81,21 @@ window.Api = {
     return data.publicUrl;
   },
 
+  async listPeople() {
+    const { data, error } = await window.sb.from("people").select("*").order("name");
+    if (error) throw error;
+    return data;
+  },
+
+  async syncPeople(names) {
+    const unique = [...new Set(names.map((n) => (n || "").trim()).filter(Boolean))];
+    if (!unique.length) return;
+    const { error } = await window.sb
+      .from("people")
+      .upsert(unique.map((name) => ({ name })), { onConflict: "name", ignoreDuplicates: true });
+    if (error) throw error;
+  },
+
   async _replaceTimes(scheduleId, times) {
     await window.sb.from("schedule_times").delete().eq("schedule_id", scheduleId);
     const rows = times

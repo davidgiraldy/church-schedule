@@ -4,6 +4,8 @@ let removeDressCodeFlag = false;
 let editingAssignments = [];
 let assignmentsEditMode = false;
 let allSchedules = [];
+let knownPeople = [];
+let currentView = "schedule";
 let filterMode = "upcoming";
 let filterFrom = null;
 let filterTo = null;
@@ -72,6 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("filter-year-select").addEventListener("change", (e) => {
     filterYear = e.target.value;
     renderFiltered();
+  });
+
+  document.getElementById("btn-view-people").addEventListener("click", () => {
+    switchView(currentView === "people" ? "schedule" : "people");
   });
 });
 
@@ -143,6 +149,72 @@ async function loadSchedules() {
   } catch (err) {
     container.innerHTML = `<p class="error">Failed to load schedules: ${escapeHtml(err.message)}</p>`;
   }
+  try {
+    knownPeople = await window.Api.listPeople();
+    populatePeopleDatalist();
+  } catch (err) {
+    // Non-critical: autocomplete just stays empty if this fails.
+  }
+}
+
+function populatePeopleDatalist() {
+  document.getElementById("people-datalist").innerHTML =
+    knownPeople.map((p) => `<option value="${escapeHtml(p.name)}"></option>`).join("");
+}
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById("filter-bar").classList.toggle("hidden", view !== "schedule");
+  document.getElementById("schedule-list").classList.toggle("hidden", view !== "schedule");
+  document.getElementById("people-view").classList.toggle("hidden", view !== "people");
+  document.getElementById("btn-new-schedule").classList.toggle("hidden", view !== "schedule");
+  document.getElementById("btn-view-people").textContent = view === "people" ? "Back to Schedule" : "People";
+  if (view === "people") renderPeopleView();
+}
+
+// Every person's service history, derived straight from already-loaded schedule data —
+// no extra query needed since the "people" table only exists to power autocomplete.
+function renderPeopleView() {
+  const container = document.getElementById("people-list");
+  const statsMap = new Map();
+  for (const s of allSchedules) {
+    for (const a of s.schedule_assignments) {
+      const name = (a.person_name || "").trim();
+      if (!name) continue;
+      if (!statsMap.has(name)) statsMap.set(name, []);
+      statsMap.get(name).push({ date: s.service_date, role: a.role, role_group: a.role_group });
+    }
+  }
+
+  const people = [...statsMap.entries()]
+    .map(([name, entries]) => ({
+      name,
+      entries: entries.sort((a, b) => b.date.localeCompare(a.date)),
+    }))
+    .sort((a, b) => b.entries.length - a.entries.length || a.name.localeCompare(b.name));
+
+  if (!people.length) {
+    container.innerHTML = '<p class="empty">No one has been assigned to a schedule yet.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="people-grid">
+      ${people.map((p) => `
+        <article class="group-card person-card">
+          <div class="person-card-header">
+            <h4>${escapeHtml(p.name)}</h4>
+            <span class="badge">${p.entries.length}×</span>
+          </div>
+          <ul class="person-history">
+            ${p.entries.map((e) => `
+              <li><span class="role">${formatDate(e.date)}</span><span class="person">${escapeHtml(baseRoleLabel(e.role))}</span></li>
+            `).join("")}
+          </ul>
+        </article>
+      `).join("")}
+    </div>
+  `;
 }
 
 function renderScheduleList(schedules) {
@@ -343,7 +415,7 @@ function renderAssignmentsQuickFill() {
       ${g.items.map((a) => `
         <div class="quickfill-row">
           <span class="quickfill-role">${escapeHtml(a.role)}</span>
-          <input type="text" class="quickfill-name-input" data-index="${a.index}" placeholder="Not assigned" value="${escapeHtml(a.person_name)}" />
+          <input type="text" class="quickfill-name-input" list="people-datalist" data-index="${a.index}" placeholder="Not assigned" value="${escapeHtml(a.person_name)}" />
         </div>
       `).join("")}
     </div>
@@ -363,7 +435,7 @@ function renderAssignmentsEditMode() {
     <div class="assignment-row" data-index="${index}">
       <input type="text" class="assign-group-input" placeholder="Group (e.g. Stage)" value="${escapeHtml(a.role_group)}" />
       <input type="text" class="assign-role-input" placeholder="Role (e.g. Worship Leader)" value="${escapeHtml(a.role)}" required />
-      <input type="text" class="assign-person-input" placeholder="Assigned name" value="${escapeHtml(a.person_name)}" />
+      <input type="text" class="assign-person-input" list="people-datalist" placeholder="Assigned name" value="${escapeHtml(a.person_name)}" />
       <button type="button" class="btn-icon btn-remove-row">&times;</button>
     </div>
   `).join("");
@@ -430,6 +502,11 @@ async function handleSubmit(e) {
       });
     } else {
       await window.Api.createSchedule({ service_date, label, times, assignments, dressCodeFile });
+    }
+    try {
+      await window.Api.syncPeople(assignments.map((a) => a.person_name));
+    } catch (err) {
+      // Non-critical: the schedule itself already saved successfully.
     }
     closeModal();
     await loadSchedules();
