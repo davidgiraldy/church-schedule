@@ -18,10 +18,10 @@ window.Api = {
     return data;
   },
 
-  async createSchedule({ service_date, label, times, assignments, dressCodeFile }) {
+  async createSchedule({ service_date, label, times, assignments, dressCodeFile, dressCodeNotes }) {
     const { data: schedule, error: scheduleErr } = await window.sb
       .from("schedules")
-      .insert({ service_date, label: label || null })
+      .insert({ service_date, label: label || null, dress_code_notes: dressCodeNotes || null })
       .select()
       .single();
     if (scheduleErr) throw scheduleErr;
@@ -37,10 +37,10 @@ window.Api = {
     return schedule;
   },
 
-  async updateSchedule(id, { service_date, label, times, assignments, dressCodeFile, removeDressCode, existingDressCodePath }) {
+  async updateSchedule(id, { service_date, label, times, assignments, dressCodeFile, removeDressCode, existingDressCodePath, dressCodeNotes }) {
     const { error: scheduleErr } = await window.sb
       .from("schedules")
-      .update({ service_date, label: label || null, updated_at: new Date().toISOString() })
+      .update({ service_date, label: label || null, dress_code_notes: dressCodeNotes || null, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (scheduleErr) throw scheduleErr;
 

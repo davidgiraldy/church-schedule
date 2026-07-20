@@ -72,3 +72,6 @@ create policy "public read people" on people for select using (true);
 create policy "public write people" on people for insert with check (true);
 create policy "public update people" on people for update using (true);
 create policy "public delete people" on people for delete using (true);
+
+-- dress code detail text (bullet points), shown alongside the dress code image
+alter table schedules add column dress_code_notes text;

@@ -284,12 +284,15 @@ function scheduleCardHtml(s) {
     </article>
   `).join("");
 
-  const dressCodeHtml = s.dress_code_image_path ? `
+  const dressCodeHtml = (s.dress_code_image_path || s.dress_code_notes) ? `
     <article class="group-card dresscode-card">
       <h4>Dress Code</h4>
-      <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
-        <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
-      </a>
+      ${s.dress_code_image_path ? `
+        <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
+          <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
+        </a>
+      ` : ""}
+      ${dressCodeNotesHtml(s.dress_code_notes)}
     </article>
   ` : "";
 
@@ -359,6 +362,8 @@ function openModal(schedule = null) {
   document.getElementById("date-error").classList.add("hidden");
   document.getElementById("schedule-label").value = schedule ? (schedule.label || "") : "";
   document.getElementById("btn-delete-schedule").classList.toggle("hidden", !schedule);
+
+  document.getElementById("dress-code-notes").value = schedule ? (schedule.dress_code_notes || "") : "";
 
   document.getElementById("dress-code-file").value = "";
   const preview = document.getElementById("dress-code-preview");
@@ -532,17 +537,18 @@ async function handleSubmit(e) {
     .filter((a) => a.role);
 
   const dressCodeFile = document.getElementById("dress-code-file").files[0] || null;
+  const dressCodeNotes = document.getElementById("dress-code-notes").value.trim();
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   try {
     if (currentScheduleId) {
       await window.Api.updateSchedule(currentScheduleId, {
-        service_date, label, times, assignments,
+        service_date, label, times, assignments, dressCodeNotes,
         dressCodeFile, removeDressCode: removeDressCodeFlag, existingDressCodePath: currentDressCodePath,
       });
     } else {
-      await window.Api.createSchedule({ service_date, label, times, assignments, dressCodeFile });
+      await window.Api.createSchedule({ service_date, label, times, assignments, dressCodeFile, dressCodeNotes });
     }
     try {
       await window.Api.syncPeople(assignments.map((a) => a.person_name));
@@ -647,10 +653,11 @@ function buildShareCardHtml(s) {
     </div>
   `).join("");
 
-  const dressCodeHtml = s.dress_code_image_path ? `
+  const dressCodeHtml = (s.dress_code_image_path || s.dress_code_notes) ? `
     <div class="share-section">
       <h4>Dress Code</h4>
-      <img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />
+      ${s.dress_code_image_path ? `<img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />` : ""}
+      ${dressCodeNotesHtml(s.dress_code_notes)}
     </div>
   ` : "";
 
@@ -670,6 +677,12 @@ function buildShareCardHtml(s) {
       <div class="share-footer">Weekly Service Schedule</div>
     </div>
   `;
+}
+
+function dressCodeNotesHtml(notes) {
+  const lines = (notes || "").split("\n").map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) return "";
+  return `<ul class="dresscode-notes-list">${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join("")}</ul>`;
 }
 
 function formatDate(isoDate) {
