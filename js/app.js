@@ -284,17 +284,19 @@ function scheduleCardHtml(s) {
     </article>
   `).join("");
 
-  const dressCodeHtml = (s.dress_code_image_path || s.dress_code_notes) ? `
+  const dressCodeImageHtml = s.dress_code_image_path ? `
     <article class="group-card dresscode-card">
       <h4>Dress Code</h4>
-      <div class="dresscode-body">
-        ${s.dress_code_image_path ? `
-          <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
-            <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
-          </a>
-        ` : ""}
-        ${dressCodeNotesHtml(s.dress_code_notes)}
-      </div>
+      <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
+        <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
+      </a>
+    </article>
+  ` : "";
+
+  const dressCodeNotesCardHtml = s.dress_code_notes ? `
+    <article class="group-card">
+      <h4>Dress Code Detail</h4>
+      ${dressCodeNotesHtml(s.dress_code_notes)}
     </article>
   ` : "";
 
@@ -313,7 +315,8 @@ function scheduleCardHtml(s) {
       </div>
       <div class="group-cards">
         ${groupCardsHtml || '<p class="empty-small">No assignments yet.</p>'}
-        ${dressCodeHtml}
+        ${dressCodeImageHtml}
+        ${dressCodeNotesCardHtml}
       </div>
     </section>
   `;
@@ -655,10 +658,16 @@ function buildShareCardHtml(s) {
     </div>
   `).join("");
 
-  const dressCodeHtml = (s.dress_code_image_path || s.dress_code_notes) ? `
+  const dressCodeImageHtml = s.dress_code_image_path ? `
     <div class="share-section">
       <h4>Dress Code</h4>
-      ${s.dress_code_image_path ? `<img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />` : ""}
+      <img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />
+    </div>
+  ` : "";
+
+  const dressCodeNotesCardHtml = s.dress_code_notes ? `
+    <div class="share-section">
+      <h4>Dress Code Detail</h4>
       ${dressCodeNotesHtml(s.dress_code_notes)}
     </div>
   ` : "";
@@ -674,7 +683,8 @@ function buildShareCardHtml(s) {
       <div class="times-row share-times-row">${timesHtml}</div>
       <div class="share-sections">
         ${sectionsHtml}
-        ${dressCodeHtml}
+        ${dressCodeImageHtml}
+        ${dressCodeNotesCardHtml}
       </div>
       <div class="share-footer">Weekly Service Schedule</div>
     </div>
