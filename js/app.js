@@ -449,12 +449,17 @@ function renderAssignmentsQuickFill() {
 // Structure view: full Group/Role/Name rows, for creating, renaming, reordering, or removing roles.
 function renderAssignmentsEditMode() {
   const list = document.getElementById("assignments-list");
+  const lastIndex = editingAssignments.length - 1;
   list.innerHTML = editingAssignments.map((a, index) => `
     <div class="assignment-row" data-index="${index}">
       <input type="text" class="assign-group-input" placeholder="Group (e.g. Stage)" value="${escapeHtml(a.role_group)}" />
       <input type="text" class="assign-role-input" placeholder="Role (e.g. Worship Leader)" value="${escapeHtml(a.role)}" required />
       <input type="text" class="assign-person-input" list="people-datalist" placeholder="Assigned name" value="${escapeHtml(a.person_name)}" />
-      <button type="button" class="btn-icon btn-remove-row">&times;</button>
+      <div class="assignment-row-actions">
+        <button type="button" class="btn-icon btn-move-up" ${index === 0 ? "disabled" : ""}>&uarr;</button>
+        <button type="button" class="btn-icon btn-move-down" ${index === lastIndex ? "disabled" : ""}>&darr;</button>
+        <button type="button" class="btn-icon btn-remove-row">&times;</button>
+      </div>
     </div>
   `).join("");
 
@@ -473,7 +478,16 @@ function renderAssignmentsEditMode() {
       editingAssignments.splice(index, 1);
       renderAssignmentsEditMode();
     });
+    row.querySelector(".btn-move-up").addEventListener("click", () => moveAssignment(index, -1));
+    row.querySelector(".btn-move-down").addEventListener("click", () => moveAssignment(index, 1));
   });
+}
+
+function moveAssignment(index, direction) {
+  const target = index + direction;
+  if (target < 0 || target >= editingAssignments.length) return;
+  [editingAssignments[index], editingAssignments[target]] = [editingAssignments[target], editingAssignments[index]];
+  renderAssignmentsEditMode();
 }
 
 function checkDuplicateDate() {

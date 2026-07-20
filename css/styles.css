@@ -546,6 +546,22 @@ body {
   align-items: center;
 }
 
+.assignment-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.assignment-row-actions .btn-icon {
+  font-size: 1rem;
+  padding: 4px 6px;
+}
+.assignment-row-actions .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.assignment-row-actions .btn-icon:disabled:hover { background: none; }
+
 .time-row input, .assignment-row input {
   padding: 9px 11px;
   border: 1px solid var(--border);
