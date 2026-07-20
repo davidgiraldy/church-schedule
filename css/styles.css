@@ -541,26 +541,23 @@ body {
 
 .assignment-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
   gap: 8px;
   align-items: center;
 }
 
-.assignment-row-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
+.assignment-row.sortable-ghost { opacity: 0.4; }
+.assignment-row.sortable-drag { background: var(--card-bg-hover); border-radius: 8px; }
 
-.assignment-row-actions .btn-icon {
-  font-size: 1rem;
-  padding: 4px 6px;
+.drag-handle {
+  cursor: grab;
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  padding: 4px 2px;
+  touch-action: none;
+  user-select: none;
 }
-.assignment-row-actions .btn-icon:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-.assignment-row-actions .btn-icon:disabled:hover { background: none; }
+.drag-handle:active { cursor: grabbing; }
 
 .time-row input, .assignment-row input {
   padding: 9px 11px;

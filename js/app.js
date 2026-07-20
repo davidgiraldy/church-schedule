@@ -3,6 +3,7 @@ let currentDressCodePath = null;
 let removeDressCodeFlag = false;
 let editingAssignments = [];
 let assignmentsEditMode = false;
+let assignmentsSortable = null;
 let allSchedules = [];
 let knownPeople = [];
 let currentView = "schedule";
@@ -425,6 +426,7 @@ function renderAssignmentsEditor() {
 // Default view: just role labels + a name input, grouped by section — this is the form
 // used every week to fill in who's serving, so role/group structure stays out of the way.
 function renderAssignmentsQuickFill() {
+  destroyAssignmentsSortable();
   const list = document.getElementById("assignments-list");
   const groups = groupByRoleGroup(editingAssignments);
   list.innerHTML = groups.map((g) => `
@@ -447,19 +449,17 @@ function renderAssignmentsQuickFill() {
 }
 
 // Structure view: full Group/Role/Name rows, for creating, renaming, reordering, or removing roles.
+// Rows are reorderable by dragging the handle (SortableJS), touch and mouse both work.
 function renderAssignmentsEditMode() {
+  destroyAssignmentsSortable();
   const list = document.getElementById("assignments-list");
-  const lastIndex = editingAssignments.length - 1;
   list.innerHTML = editingAssignments.map((a, index) => `
     <div class="assignment-row" data-index="${index}">
+      <span class="drag-handle">&#9776;</span>
       <input type="text" class="assign-group-input" placeholder="Group (e.g. Stage)" value="${escapeHtml(a.role_group)}" />
       <input type="text" class="assign-role-input" placeholder="Role (e.g. Worship Leader)" value="${escapeHtml(a.role)}" required />
       <input type="text" class="assign-person-input" list="people-datalist" placeholder="Assigned name" value="${escapeHtml(a.person_name)}" />
-      <div class="assignment-row-actions">
-        <button type="button" class="btn-icon btn-move-up" ${index === 0 ? "disabled" : ""}>&uarr;</button>
-        <button type="button" class="btn-icon btn-move-down" ${index === lastIndex ? "disabled" : ""}>&darr;</button>
-        <button type="button" class="btn-icon btn-remove-row">&times;</button>
-      </div>
+      <button type="button" class="btn-icon btn-remove-row">&times;</button>
     </div>
   `).join("");
 
@@ -478,16 +478,25 @@ function renderAssignmentsEditMode() {
       editingAssignments.splice(index, 1);
       renderAssignmentsEditMode();
     });
-    row.querySelector(".btn-move-up").addEventListener("click", () => moveAssignment(index, -1));
-    row.querySelector(".btn-move-down").addEventListener("click", () => moveAssignment(index, 1));
+  });
+
+  assignmentsSortable = Sortable.create(list, {
+    handle: ".drag-handle",
+    animation: 150,
+    onEnd: (evt) => {
+      if (evt.oldIndex === evt.newIndex) return;
+      const [moved] = editingAssignments.splice(evt.oldIndex, 1);
+      editingAssignments.splice(evt.newIndex, 0, moved);
+      renderAssignmentsEditMode();
+    },
   });
 }
 
-function moveAssignment(index, direction) {
-  const target = index + direction;
-  if (target < 0 || target >= editingAssignments.length) return;
-  [editingAssignments[index], editingAssignments[target]] = [editingAssignments[target], editingAssignments[index]];
-  renderAssignmentsEditMode();
+function destroyAssignmentsSortable() {
+  if (assignmentsSortable) {
+    assignmentsSortable.destroy();
+    assignmentsSortable = null;
+  }
 }
 
 function checkDuplicateDate() {
