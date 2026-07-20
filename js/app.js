@@ -287,12 +287,14 @@ function scheduleCardHtml(s) {
   const dressCodeHtml = (s.dress_code_image_path || s.dress_code_notes) ? `
     <article class="group-card dresscode-card">
       <h4>Dress Code</h4>
-      ${s.dress_code_image_path ? `
-        <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
-          <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
-        </a>
-      ` : ""}
-      ${dressCodeNotesHtml(s.dress_code_notes)}
+      <div class="dresscode-body">
+        ${s.dress_code_image_path ? `
+          <a href="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" target="_blank" rel="noopener">
+            <img src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code for ${dateLabel}" />
+          </a>
+        ` : ""}
+        ${dressCodeNotesHtml(s.dress_code_notes)}
+      </div>
     </article>
   ` : "";
 

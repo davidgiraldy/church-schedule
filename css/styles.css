@@ -525,11 +525,22 @@ body {
   font-family: inherit;
 }
 
+.dresscode-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 2px;
+}
+
+.dresscode-body a {
+  flex: 0 0 45%;
+  max-width: 45%;
+}
+
 .dresscode-card img {
   width: 100%;
   border-radius: 8px;
   display: block;
-  margin-top: 2px;
 }
 
 .dresscode-notes {
@@ -550,6 +561,10 @@ body {
   list-style: disc;
   margin: 12px 0 0;
   padding-left: 18px;
+}
+.dresscode-body .dresscode-notes-list {
+  flex: 1;
+  margin-top: 4px;
 }
 .group-card .dresscode-notes-list li, .share-section .dresscode-notes-list li {
   display: list-item;
@@ -620,6 +635,8 @@ body {
 @media (max-width: 600px) {
   .assignment-row { grid-template-columns: 1fr; }
   .time-row { grid-template-columns: 1fr; }
+  .dresscode-body { flex-direction: column; }
+  .dresscode-body a { flex-basis: auto; max-width: 100%; }
   .topbar { padding: 14px 18px; }
   .topbar-inner {
     display: flex;
