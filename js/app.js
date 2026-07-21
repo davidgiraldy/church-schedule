@@ -581,14 +581,35 @@ async function handleDelete() {
   }
 }
 
+// Captures the schedule's actual on-page card (same styling/layout as the live site) instead
+// of a separately designed layout — Share/Edit buttons are stripped from a clone before capture.
 async function shareSchedule(s, triggerBtn) {
   const originalLabel = triggerBtn.textContent;
   triggerBtn.disabled = true;
   triggerBtn.textContent = "Preparing...";
 
+  const sourceBlock = triggerBtn.closest(".schedule-block");
+  const clone = sourceBlock.cloneNode(true);
+  clone.querySelector(".header-right")?.remove();
+
+  clone.querySelectorAll("img").forEach((img) => {
+    const src = img.src;
+    img.removeAttribute("src");
+    img.crossOrigin = "anonymous";
+    img.src = src;
+  });
+
   const root = document.createElement("div");
   root.className = "share-render-root";
-  root.innerHTML = buildShareCardHtml(s);
+  root.innerHTML = `
+    <div class="share-card">
+      <div class="share-header">
+        <img class="share-logo" src="assets/logo-icon.svg" alt="" />
+        <div class="share-church-name">GBI House of Happiness</div>
+      </div>
+    </div>
+  `;
+  root.querySelector(".share-card").appendChild(clone);
   document.body.appendChild(root);
 
   try {
@@ -633,62 +654,6 @@ function downloadBlob(blob, filename) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-// Standalone, single-column layout for the shareable PNG — stacked sections read far
-// better than the 3-column desktop grid once compressed into a WhatsApp chat thumbnail.
-function buildShareCardHtml(s) {
-  const dateLabel = formatDate(s.service_date);
-  const times = [...s.schedule_times].sort((a, b) => a.service_time.localeCompare(b.service_time));
-  const timesHtml = times.map((t) => `<span class="badge">${formatTime(t.service_time)}${t.note ? " · " + escapeHtml(t.note) : ""}</span>`).join("");
-
-  const groups = groupAssignmentsCompact(s.schedule_assignments);
-  const sectionsHtml = groups.map((g) => `
-    <div class="share-section">
-      <h4>${escapeHtml(g.group)}</h4>
-      <ul>
-        ${g.items.map((item) => {
-          if (!item.names.length) {
-            return `<li><span class="role">${escapeHtml(item.label)}</span><span class="person unset">-</span></li>`;
-          }
-          const linesHtml = item.names.map((n) => `<span class="person-line">${escapeHtml(n)}</span>`).join("");
-          return `<li><span class="role">${escapeHtml(item.label)}</span><span class="person-list">${linesHtml}</span></li>`;
-        }).join("")}
-      </ul>
-    </div>
-  `).join("");
-
-  const dressCodeImageHtml = s.dress_code_image_path ? `
-    <div class="share-section">
-      <h4>Dress Code</h4>
-      <img class="share-dresscode-img" crossorigin="anonymous" src="${window.Api.getDressCodeUrl(s.dress_code_image_path)}" alt="Dress code" />
-    </div>
-  ` : "";
-
-  const dressCodeNotesCardHtml = s.dress_code_notes ? `
-    <div class="share-section">
-      <h4>Dress Code Detail</h4>
-      ${dressCodeNotesHtml(s.dress_code_notes)}
-    </div>
-  ` : "";
-
-  return `
-    <div class="share-card">
-      <div class="share-header">
-        <img class="share-logo" src="assets/logo-icon.svg" alt="" />
-        <div class="share-church-name">GBI House of Happiness</div>
-      </div>
-      <div class="share-date">${dateLabel}</div>
-      ${s.label ? `<span class="label-tag">${escapeHtml(s.label)}</span>` : ""}
-      <div class="times-row share-times-row">${timesHtml}</div>
-      <div class="share-sections">
-        ${sectionsHtml}
-        ${dressCodeImageHtml}
-        ${dressCodeNotesCardHtml}
-      </div>
-      <div class="share-footer">Weekly Service Schedule</div>
-    </div>
-  `;
 }
 
 function dressCodeNotesHtml(notes) {
