@@ -613,15 +613,20 @@ async function shareSchedule(s, triggerBtn) {
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     const filename = `schedule-${s.service_date}.png`;
     const file = new File([blob], filename, { type: "image/png" });
+    const message = buildShareMessage(s);
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: "Weekly Service Schedule" });
+        await navigator.share({ files: [file], text: message });
       } catch (err) {
-        if (err.name !== "AbortError") downloadBlob(blob, filename);
+        if (err.name !== "AbortError") {
+          downloadBlob(blob, filename);
+          await copyToClipboard(message);
+        }
       }
     } else {
       downloadBlob(blob, filename);
+      await copyToClipboard(message);
     }
   } catch (err) {
     root.remove();
@@ -647,6 +652,39 @@ function downloadBlob(blob, filename) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    // Best-effort only — some browsers block clipboard access outside a direct user gesture.
+  }
+}
+
+// WhatsApp caption template for the PPW worship team, built from window.PPW_SHARE_ROLES
+// (see config.js). Only that fixed roster of roles is listed, in that order.
+function buildShareMessage(s) {
+  const dateLabel = formatDate(s.service_date);
+  const weekNum = Math.ceil(new Date(s.service_date + "T00:00:00").getDate() / 7);
+
+  const allItems = groupAssignmentsCompact(s.schedule_assignments).flatMap((g) => g.items);
+  const lines = window.PPW_SHARE_ROLES.map((roleLabel, i) => {
+    const item = allItems.find((it) => it.label === roleLabel);
+    const value = item && item.names.length ? joinNamesIndo(item.names) : "-";
+    const display = window.PPW_ROLE_DISPLAY[roleLabel] || roleLabel;
+    return `${i + 1}. ${display} : ${value}`;
+  }).join("\n");
+
+  const notesLines = window.PPW_SHARE_NOTES.map((n) => `•  ${n}`).join("\n");
+
+  return `Shalom, Welcome to PPW Group, ${dateLabel} (W${weekNum}). Berikut Pelayan yang melayani :\n\n${lines}\n\nNotes :\n${notesLines}`;
+}
+
+function joinNamesIndo(names) {
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return names.join(" dan ");
+  return names.slice(0, -1).join(", ") + ", dan " + names[names.length - 1];
 }
 
 function dressCodeNotesHtml(notes) {

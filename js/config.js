@@ -26,3 +26,12 @@ window.ROLE_TEMPLATE = [
     "PIR", "Doa Syafaat I", "Doa Syafaat II", "Musik Pendoa"
   ]}
 ];
+
+// WhatsApp share message template (see shareSchedule() in app.js). Only these roles are
+// listed, in this order — adjust freely if the PPW team's core roster changes.
+window.PPW_SHARE_ROLES = ["Worship Leader", "Singer", "Keyboard", "Bass", "Guitar", "Drum"];
+window.PPW_ROLE_DISPLAY = { "Worship Leader": "WL", "Guitar": "Gitar" };
+window.PPW_SHARE_NOTES = [
+  "Untuk Ibadah di Jam 8 & 10 Pagi, datang untuk Doa PIR (Persiapan Ibadah Raya) di Jam 7",
+  "Untuk pemusik kalau bisa bawa IEM ya, karena ga ada speaker monitor lantai",
+];
