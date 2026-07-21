@@ -604,7 +604,7 @@ async function shareSchedule(s, triggerBtn) {
   root.innerHTML = `
     <div class="share-card">
       <div class="share-header">
-        <img class="share-logo" src="assets/logo-icon.svg" alt="" />
+        <img class="share-logo" src="assets/logo-icon.png" alt="" />
         <div class="share-church-name">GBI House of Happiness</div>
       </div>
     </div>
