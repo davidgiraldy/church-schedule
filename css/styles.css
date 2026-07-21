@@ -653,18 +653,3 @@ body {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.share-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.share-logo { height: 40px; width: auto; }
-
-.share-church-name {
-  font-weight: 800;
-  font-size: 1.05rem;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}

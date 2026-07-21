@@ -601,14 +601,7 @@ async function shareSchedule(s, triggerBtn) {
 
   const root = document.createElement("div");
   root.className = "share-render-root";
-  root.innerHTML = `
-    <div class="share-card">
-      <div class="share-header">
-        <img class="share-logo" src="assets/logo-icon.png" alt="" />
-        <div class="share-church-name">GBI House of Happiness</div>
-      </div>
-    </div>
-  `;
+  root.innerHTML = `<div class="share-card"></div>`;
   root.querySelector(".share-card").appendChild(clone);
   document.body.appendChild(root);
 
