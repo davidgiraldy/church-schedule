@@ -592,6 +592,10 @@ async function shareSchedule(s, triggerBtn) {
   const clone = sourceBlock.cloneNode(true);
   clone.querySelector(".header-right")?.remove();
 
+  const weekNum = Math.ceil(new Date(s.service_date + "T00:00:00").getDate() / 7);
+  const dateHeading = clone.querySelector(".schedule-header-card h3");
+  if (dateHeading) dateHeading.append(` (Week ${weekNum})`);
+
   clone.querySelectorAll("img").forEach((img) => {
     const src = img.src;
     img.removeAttribute("src");
