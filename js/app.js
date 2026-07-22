@@ -607,7 +607,7 @@ async function shareSchedule(s, triggerBtn) {
 
   try {
     await waitForImages(root);
-    const canvas = await html2canvas(root.querySelector(".share-card"), { backgroundColor: "#f3ede0", scale: 2, useCORS: true });
+    const canvas = await html2canvas(root.querySelector(".share-card"), { backgroundColor: "#f3ede0", scale: 4, useCORS: true });
     root.remove();
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
