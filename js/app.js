@@ -596,12 +596,17 @@ async function shareSchedule(s, triggerBtn) {
   const dateHeading = clone.querySelector(".schedule-header-card h3");
   if (dateHeading) dateHeading.append(` (Week ${weekNum})`);
 
-  clone.querySelectorAll("img").forEach((img) => {
-    const src = img.src;
-    img.removeAttribute("src");
-    img.crossOrigin = "anonymous";
-    img.src = src;
-  });
+  const objectUrls = [];
+  await Promise.all([...clone.querySelectorAll("img")].map(async (img) => {
+    try {
+      const resp = await fetch(img.src, { mode: "cors" });
+      const blobUrl = URL.createObjectURL(await resp.blob());
+      objectUrls.push(blobUrl);
+      img.src = blobUrl;
+    } catch (err) {
+      // Leave the original src as a last resort; capture may still work or fail gracefully below.
+    }
+  }));
 
   const root = document.createElement("div");
   root.className = "share-render-root";
@@ -613,6 +618,7 @@ async function shareSchedule(s, triggerBtn) {
     await waitForImages(root);
     const canvas = await html2canvas(root.querySelector(".share-card"), { backgroundColor: "#f3ede0", scale: 4, useCORS: true });
     root.remove();
+    objectUrls.forEach((u) => URL.revokeObjectURL(u));
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     const filename = `schedule-${s.service_date}.png`;
@@ -634,6 +640,7 @@ async function shareSchedule(s, triggerBtn) {
     }
   } catch (err) {
     root.remove();
+    objectUrls.forEach((u) => URL.revokeObjectURL(u));
     alert("Failed to generate share image: " + err.message);
   } finally {
     triggerBtn.disabled = false;
