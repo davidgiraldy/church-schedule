@@ -625,18 +625,21 @@ async function shareSchedule(s, triggerBtn) {
     const file = new File([blob], filename, { type: "image/png" });
     const message = buildShareMessage(s);
 
+    // Caption text is copied separately rather than passed alongside `files` in the same
+    // share() call — combining both in one call and picking "Copy" from iOS's share sheet
+    // is known to duplicate the image across two separate pasteboard items.
+    await copyToClipboard(message);
+
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], text: message });
+        await navigator.share({ files: [file] });
       } catch (err) {
         if (err.name !== "AbortError") {
           downloadBlob(blob, filename);
-          await copyToClipboard(message);
         }
       }
     } else {
       downloadBlob(blob, filename);
-      await copyToClipboard(message);
     }
   } catch (err) {
     root.remove();
